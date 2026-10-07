@@ -238,7 +238,24 @@
     return { y: h.y, m: h.m, d: h.d, text: numeral(h.d) + ' ב' + monthName(h.y, h.m), year: yearName(h.y), full: numeral(h.d) + ' ב' + monthName(h.y, h.m) + ' ' + yearName(h.y) };
   }
 
-  root.HebCal = { EPOCH_RD: EPOCH_RD, isLeap: isLeap, newYearDay: newYearDay, yearLength: yearLength, monthLength: monthLength, monthsOf: monthsOf, monthName: monthName,
+
+  // the day in the Kabbalah: sefirah of the weekday, the Omer count, Rosh Chodesh, the holiday
+  var SEF = ['חסד', 'גבורה', 'תפארת', 'נצח', 'הוד', 'יסוד', 'מלכות'];
+  var SEF_MEANING = ['חסד: נתינה ואהבה בלי גבול', 'גבורה: דין, גבול ושליטה עצמית', 'תפארת: איזון ואמת, הרמוניה בין החסד לגבורה', 'נצח: התמדה וניצחון על המכשולים', 'הוד: הודיה, ענווה והכנעה', 'יסוד: חיבור, שותפות והעברת השפע', 'מלכות: קבלה, ביטוי ומעשה בעולם'];
+  var WEEKDAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+  function kabbalahToday(day) {
+    var h = fromDay(day), w = weekday(day), out = [];
+    out.push({ b: 'יום ' + WEEKDAYS[w], t: 'ספירת ' + SEF_MEANING[w] });
+    var omer = day - toDay(h.y, 1, 15);
+    if (omer >= 1 && omer <= 49) out.push({ b: 'היום ' + omer + ' לעומר', t: SEF[(omer - 1) % 7] + ' שב' + SEF[Math.ceil(omer / 7) - 1] });
+    var rc = roshChodesh(day);
+    if (rc) out.push({ b: 'ראש חודש ' + rc, t: 'זמן התחדשות, יום של התחלה חדשה' });
+    var hol = holidayOn(day);
+    if (hol) out.push({ b: hol.name, t: hol.desc });
+    return out;
+  }
+
+  root.HebCal = {kabbalahToday: kabbalahToday, SEF: SEF,  EPOCH_RD: EPOCH_RD, isLeap: isLeap, newYearDay: newYearDay, yearLength: yearLength, monthLength: monthLength, monthsOf: monthsOf, monthName: monthName,
     fromDay: fromDay, toDay: toDay, dayOf: dayOf, dateOf: dateOf, weekday: weekday, iso: iso, numeral: numeral, yearName: yearName,
     parshaFor: parshaFor, parshiotOfYear: parshiotOfYear, PARSHIOT: PARSHIOT, holidaysOfYear: holidaysOfYear, holidayOn: holidayOn, roshChodesh: roshChodesh, describe: describe };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.HebCal;
